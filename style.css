@@ -1,0 +1,765 @@
+
+
+  /* ============================================================
+     TOKENS — DATA DYSTOPIA
+     ============================================================ */
+  :root{
+    --bg:            #0A0A0A;
+    --bg-dry:        #141110;
+    --ink:           #F5F5F0;
+    --ink-dim:       #8A8A82;
+    --alert:         #FF3366;
+    --cyan:          #00E5FF;
+    --earth:         #6B4A34;
+    --line:          rgba(245,245,240,0.14);
+    --mono: 'Space Grotesk', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{ background:var(--bg); }
+
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    overflow-x:hidden;
+    cursor:none;
+  }
+  
+  ::selection{ background:var(--alert); color:var(--bg); }
+
+  a{ color:inherit; text-decoration:none; }
+
+  .tabular{
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* ============================================================
+     CURSOR — mira / mancha de tinta molhada
+     ============================================================ */
+  #cursor-dot, #cursor-ring{
+    position:fixed;
+    top:0; left:0;
+    pointer-events:none;
+    z-index:9999;
+    transform:translate(-50%,-50%);
+    will-change:transform;
+  }
+  #cursor-dot{
+    width:6px; height:6px;
+    background:var(--alert);
+    border-radius:50%;
+  }
+  #cursor-ring{
+    width:34px; height:34px;
+    border:1px solid var(--alert);
+    border-radius:50%;
+    transition: width .35s cubic-bezier(.2,1,.3,1), height .35s cubic-bezier(.2,1,.3,1),
+                border-radius .35s cubic-bezier(.2,1,.3,1), background .35s ease, opacity .2s ease;
+  }
+  #cursor-ring::before, #cursor-ring::after{
+    content:'';
+    position:absolute;
+    background:var(--alert);
+    top:50%; left:50%;
+  }
+  #cursor-ring::before{ width:1px; height:8px; transform:translate(-50%,-140%); }
+  #cursor-ring::after{ width:8px; height:1px; transform:translate(40%,-50%); }
+  #cursor-ring.ink{
+    width:70px; height:70px;
+    background:rgba(255,51,102,0.18);
+    border-color:transparent;
+    border-radius:38% 62% 55% 45% / 48% 40% 60% 52%;
+  }
+  #cursor-ring.ink::before,#cursor-ring.ink::after{ display:none; }
+  @media (hover:none), (pointer:coarse){
+    #cursor-dot, #cursor-ring{ display:none; }
+    body{ cursor:auto; }
+  }
+
+  /* ============================================================
+     UTILITÁRIOS DE TIPO
+     ============================================================ */
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:18px; height:1px;
+    background:var(--alert);
+  }
+
+  /* ============================================================
+     TICKER SUPERIOR — "recibo" vivo
+     ============================================================ */
+  #ticker{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:500;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+    white-space:nowrap;
+    padding:7px 0;
+  }
+  #ticker span{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.08em;
+    color:var(--ink-dim);
+    padding-right:60px;
+  }
+  #ticker span b{ color:var(--alert); font-weight:600; }
+  #ticker-track{ display:inline-flex; }
+
+  /* ============================================================
+     SECTION 1 — HERO
+     ============================================================ */
+  .section{
+    position:relative;
+    width:100%;
+  }
+  #hero{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:120px 20px 60px;
+    position:relative;
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0/100% 64px,
+      var(--bg);
+  }
+  #hero::after{
+    content:'';
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 30%, rgba(255,51,102,0.08), transparent 60%);
+    pointer-events:none;
+  }
+
+  .hero-label{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin-bottom:36px;
+  }
+
+  #counter-hero{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:clamp(4.5rem, 17vw, 13rem);
+    line-height:0.9;
+    letter-spacing:-0.02em;
+    color:var(--ink);
+    position:relative;
+  }
+  #counter-hero .unit{
+    font-size:0.14em;
+    color:var(--alert);
+    letter-spacing:0.08em;
+    vertical-align:super;
+    margin-left:6px;
+  }
+  .counter-caption{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--alert);
+    margin-top:14px;
+  }
+
+  .hero-title{
+    font-family:var(--sans);
+    font-weight:800;
+    font-size:clamp(2.1rem, 6.4vw, 5.2rem);
+    line-height:0.98;
+    letter-spacing:-0.03em;
+    max-width:16ch;
+    margin:56px auto 30px;
+  }
+  .hero-title em{
+    font-style:normal;
+    color:var(--alert);
+  }
+
+  .hero-sub{
+    font-size:15px;
+    color:var(--ink-dim);
+    max-width:46ch;
+    line-height:1.6;
+  }
+
+  .scroll-cta{
+    margin-top:64px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+  }
+  .barcode-btn{
+    display:flex;
+    align-items:flex-end;
+    gap:2px;
+    height:36px;
+    cursor:pointer;
+    background:none;
+    border:none;
+  }
+  .barcode-btn i{
+    display:block;
+    width:3px;
+    background:var(--ink);
+    transition:background .3s ease;
+  }
+  .barcode-btn:hover i{ background:var(--alert); }
+  .scroll-cta small{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.25em;
+    color:var(--ink-dim);
+    text-transform:uppercase;
+  }
+
+  /* ============================================================
+     SECTION 2 — RECIBO DO COTIDIANO
+     ============================================================ */
+  #receipt{
+    background:var(--bg);
+    position:relative;
+    border-top:1px solid var(--line);
+  }
+  #receipt-progress-track{
+    position:fixed;
+    right:0; top:0;
+    width:5px; height:100vh;
+    background:rgba(245,245,240,0.05);
+    z-index:400;
+  }
+  #receipt-progress-fill{
+    position:absolute;
+    bottom:0; left:0; width:100%;
+    height:0%;
+    background:linear-gradient(180deg, var(--cyan), var(--alert));
+  }
+
+  .receipt-wrap{
+    display:flex;
+    max-width:1400px;
+    margin:0 auto;
+    padding:0 6vw;
+  }
+  .receipt-left{
+    width:42%;
+    position:relative;
+  }
+  .receipt-pin{
+    position:sticky;
+    top:0;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding-right:40px;
+  }
+  .receipt-pin .eyebrow{ margin-bottom:26px; }
+  .receipt-pin h2{
+    font-family:var(--sans);
+    font-weight:800;
+    font-size:clamp(2rem, 4.4vw, 3.6rem);
+    line-height:1.02;
+    letter-spacing:-0.02em;
+  }
+  .receipt-pin p{
+    margin-top:24px;
+    font-size:14px;
+    color:var(--ink-dim);
+    max-width:38ch;
+    line-height:1.7;
+  }
+  .receipt-total{
+    margin-top:44px;
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--ink-dim);
+    border-top:1px dashed var(--line);
+    padding-top:18px;
+  }
+  .receipt-total b{
+    display:block;
+    font-size:clamp(1.6rem,3vw,2.4rem);
+    color:var(--alert);
+    margin-top:8px;
+  }
+
+  .receipt-right{
+    width:58%;
+    padding:14vh 0 30vh;
+  }
+  .receipt-item{
+    padding:56px 0;
+    border-bottom:1px dashed var(--line);
+    opacity:0.25;
+    transform:translateY(24px);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .receipt-item.is-active{
+    opacity:1;
+    transform:translateY(0);
+  }
+  .receipt-item .idx{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.2em;
+    color:var(--alert);
+    display:block;
+    margin-bottom:14px;
+  }
+  .receipt-item h3{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:clamp(1.3rem, 2.6vw, 1.9rem);
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .receipt-item h3 i{ color:var(--ink-dim); font-size:0.85em; }
+  .receipt-number{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:clamp(2.6rem, 6vw, 4.6rem);
+    line-height:1;
+    color:var(--ink);
+  }
+  .receipt-number .unit{
+    font-size:0.3em;
+    color:var(--cyan);
+    margin-left:8px;
+  }
+  .water-bar{
+    margin-top:20px;
+    height:6px;
+    width:100%;
+    background:rgba(245,245,240,0.07);
+    position:relative;
+    overflow:hidden;
+  }
+  .water-bar-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    width:0%;
+    background:var(--cyan);
+  }
+  .receipt-item p{
+    margin-top:16px;
+    font-size:13px;
+    color:var(--ink-dim);
+    max-width:44ch;
+  }
+
+  /* ============================================================
+     SECTION 3 — NUVEM SEDENTA (galeria horizontal pinada)
+     ============================================================ */
+  #cloud{
+    position:relative;
+    background:var(--bg-dry);
+    overflow:hidden;
+    height:100vh;
+  }
+  #heat-svg{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    opacity:0.5;
+    pointer-events:none;
+  }
+  .cloud-pin{
+    position:relative;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .cloud-header{
+    position:absolute;
+    top:10vh; left:6vw;
+    z-index:5;
+  }
+  .cloud-header h2{
+    font-family:var(--sans);
+    font-weight:800;
+    font-size:clamp(1.8rem, 4vw, 3.2rem);
+    max-width:12ch;
+    line-height:1.02;
+  }
+  .cloud-header h2 em{ color:var(--cyan); font-style:normal; }
+
+  #cloud-track{
+    display:flex;
+    align-items:center;
+    gap:5vw;
+    padding-left:34vw;
+    padding-right:12vw;
+    width:max-content;
+    will-change:transform;
+  }
+  .server-card{
+    width:min(74vw, 420px);
+    flex-shrink:0;
+    background:linear-gradient(180deg, rgba(245,245,240,0.05), rgba(245,245,240,0.01));
+    border:1px solid var(--line);
+    padding:34px 30px;
+    position:relative;
+  }
+  .server-card::before{
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:2px;
+    background:var(--cyan);
+    opacity:0.6;
+  }
+  .server-card .rack{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    margin-bottom:24px;
+  }
+  .server-card .rack span{
+    height:9px;
+    background:rgba(245,245,240,0.08);
+    position:relative;
+  }
+  .server-card .rack span::after{
+    content:'';
+    position:absolute; left:6px; top:2px; bottom:2px; width:5px;
+    background:var(--cyan);
+    opacity:0.7;
+  }
+  .server-card .idx{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-dim);
+    letter-spacing:0.15em;
+  }
+  .server-card h3{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:1.35rem;
+    margin:14px 0 12px;
+  }
+  .server-card .server-number{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:clamp(2.1rem, 3.6vw, 2.9rem);
+    color:var(--cyan);
+  }
+  .server-card .server-number .unit{ font-size:0.35em; color:var(--ink-dim); }
+  .server-card p{
+    margin-top:14px;
+    font-size:12.5px;
+    color:var(--ink-dim);
+    line-height:1.6;
+  }
+  .cloud-progress{
+    position:absolute;
+    bottom:8vh; left:6vw;
+    right:6vw;
+    height:2px;
+    background:rgba(245,245,240,0.08);
+    z-index:5;
+  }
+  .cloud-progress-fill{
+    height:100%; width:0%;
+    background:var(--cyan);
+  }
+
+  /* ============================================================
+     SECTION 4 — A CONTA CHEGOU (footer distópico)
+     ============================================================ */
+  #bill{
+    background:var(--bg);
+    background-image:
+      radial-gradient(ellipse at 50% 100%, rgba(107,74,52,0.25), transparent 60%);
+    padding:16vh 6vw 0;
+    text-align:center;
+    position:relative;
+  }
+  #bill .eyebrow{ justify-content:center; margin:0 auto 30px; }
+  #bill h2{
+    font-family:var(--sans);
+    font-weight:900;
+    font-size:clamp(2.6rem, 11vw, 8.5rem);
+    line-height:0.92;
+    letter-spacing:-0.03em;
+  }
+  #bill h2 span{ color:var(--alert); }
+  #bill .bill-sub{
+    max-width:52ch;
+    margin:34px auto 0;
+    color:var(--ink-dim);
+    font-size:15px;
+    line-height:1.7;
+  }
+
+  .cta-btn{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    gap:14px;
+    margin:56px auto 0;
+    padding:22px 46px;
+    font-family:var(--mono);
+    font-size:14px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--ink);
+    background:transparent;
+    border:1px solid var(--ink);
+    overflow:hidden;
+    cursor:pointer;
+    z-index:1;
+  }
+  .cta-btn::before{
+    content:'';
+    position:absolute; inset:0;
+    background:var(--ink);
+    transform:scaleY(0);
+    transform-origin:bottom;
+    transition:transform .45s cubic-bezier(.7,0,.2,1);
+    z-index:-1;
+  }
+  .cta-btn:hover{ color:var(--bg); }
+  .cta-btn:hover::before{ transform:scaleY(1); }
+
+  .receipt-footer{
+    margin-top:14vh;
+    max-width:600px;
+    margin-left:auto; margin-right:auto;
+    border-top:1px dashed var(--line);
+    padding-top:28px;
+    padding-bottom:60px;
+  }
+  .receipt-footer-row{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-dim);
+    letter-spacing:0.05em;
+    padding:6px 0;
+  }
+  .receipt-footer-row b{ color:var(--ink); }
+  .receipt-divider{
+    border:none;
+    border-top:1px dashed var(--line);
+    margin:14px 0;
+  }
+  .css-barcode{
+    display:flex;
+    align-items:flex-end;
+    gap:2px;
+    height:44px;
+    margin:26px auto 10px;
+    width:fit-content;
+  }
+  .css-barcode i{
+    display:block;
+    width:2px;
+    background:var(--ink-dim);
+  }
+  .footer-credit{
+    text-align:center;
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.2em;
+    color:var(--ink-dim);
+    text-transform:uppercase;
+  }
+
+  /* ============================================================
+     RESPONSIVO
+     ============================================================ */
+  @media (max-width:768px){
+    #ticker{ display:none; }
+    .receipt-wrap{ flex-direction:column; padding:0 6vw; }
+    .receipt-left, .receipt-right{ width:100%; }
+    .receipt-pin{
+      position:relative;
+      height:auto;
+      padding:80px 0 40px;
+    }
+    .receipt-right{ padding:0 0 20vh; }
+
+    #cloud{ height:auto; }
+    .cloud-pin{
+      height:auto;
+      padding:100px 0 80px;
+    }
+    .cloud-header{ position:relative; top:0; left:0; padding:0 6vw 40px; }
+    #cloud-track{
+      display:flex;
+      flex-direction:column;
+      padding:0 6vw;
+      gap:28px;
+      width:100%;
+    }
+    .server-card{ width:100%; }
+    .cloud-progress{ display:none; }
+
+    #bill{ padding:12vh 6vw 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+  }
+/* ============================================================
+     GRUPO DE BOTÕES — COLAPSO / ESPERANÇA
+     ============================================================ */
+     .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      margin: 56px auto 0;
+    }
+    
+    /* Botões gêmeos com identidade visual própria */
+    .cta-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 22px 46px;
+      font-family: var(--mono);
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--ink);
+      overflow: hidden;
+      cursor: pointer;
+      z-index: 1;
+      min-width: 180px;
+      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+    
+    .cta-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--ink);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 0.45s cubic-bezier(0.7, 0, 0.2, 1);
+      z-index: -1;
+    }
+    
+    .cta-btn:hover {
+      color: var(--bg);
+    }
+    
+    .cta-btn:hover::before {
+      transform: scaleY(1);
+    }
+    
+    /* Botão AURA — vermelho/sangue */
+    .cta-aura {
+      border-color: var(--alert);
+      color: var(--alert);
+      box-shadow: 0 0 30px rgba(255, 51, 102, 0.08);
+    }
+    
+    .cta-aura::before {
+      background: var(--alert);
+    }
+    
+    .cta-aura:hover {
+      color: var(--bg);
+      box-shadow: 0 0 60px rgba(255, 51, 102, 0.3);
+    }
+    
+    .cta-aura i {
+      color: var(--alert);
+      transition: color 0.3s ease;
+    }
+    
+    .cta-aura:hover i {
+      color: var(--bg);
+    }
+    
+    /* Botão ESPERANÇA — azul/água */
+    .cta-esperanca {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.08);
+    }
+    
+    .cta-esperanca::before {
+      background: var(--cyan);
+    }
+    
+    .cta-esperanca:hover {
+      color: var(--bg);
+      box-shadow: 0 0 60px rgba(0, 229, 255, 0.3);
+    }
+    
+    .cta-esperanca i {
+      color: var(--cyan);
+      transition: color 0.3s ease;
+    }
+    
+    .cta-esperanca:hover i {
+      color: var(--bg);
+    }
+    
+    /* Efeito de pulsação suave nos botões */
+    .cta-aura {
+      animation: auraPulse 3s ease-in-out infinite;
+    }
+    
+    .cta-esperanca {
+      animation: esperancaPulse 3s ease-in-out infinite 0.5s;
+    }
+    
+    @keyframes auraPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255, 51, 102, 0.08); }
+      50% { box-shadow: 0 0 50px rgba(255, 51, 102, 0.2); }
+    }
+    
+    @keyframes esperancaPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(0, 229, 255, 0.08); }
+      50% { box-shadow: 0 0 50px rgba(0, 229, 255, 0.2); }
+    }
+    
+    /* Responsivo: empilha os botões em mobile */
+    @media (max-width: 600px) {
+      .cta-group {
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+      }
+      
+      .cta-btn {
+        width: 100%;
+        max-width: 320px;
+        padding: 18px 30px;
+        font-size: 13px;
+      }
+    }

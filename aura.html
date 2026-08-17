@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIME_COLLAPSE // SANGRAMENTO_TEMPORAL</title>
+
+    <!-- ============================================================ -->
+    <!-- CDN: Google Fonts - Space Grotesk + JetBrains Mono           -->
+    <!-- ============================================================ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <!-- ============================================================ -->
+    <!-- CDN: GSAP + ScrollTrigger                                    -->
+    <!-- ============================================================ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js">
+    </script>
+
+    <style>
+        :root {
+            --black-absolute: #0A0A0A;
+            --white-aged: #E8E6E3;
+            --blood-red: #CC0000;
+            --blood-dark: #660000;
+            --blood-dried: #330000;
+            --gray-ghost: #2A2A2A;
+            --font-primary: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background: var(--black-absolute);
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--black-absolute);
+            color: var(--white-aged);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        /* ========================================================= */
+        /* CURSOR CUSTOMIZADO - Gota de sangue                       */
+        /* ========================================================= */
+        #blood-cursor {
+            position: fixed;
+            z-index: 99999;
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            background: var(--blood-red);
+            box-shadow: 0 0 20px 6px rgba(204, 0, 0, 0.7), 0 0 40px 12px rgba(204, 0, 0, 0.3);
+            transform: translate(-50%, -50%) rotate(45deg);
+            will-change: left, top;
+            mix-blend-mode: screen;
+            transition: width 0.2s, height 0.2s, border-radius 0.2s;
+        }
+        #blood-cursor.hovering {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            box-shadow: 0 0 30px 10px rgba(204, 0, 0, 0.9), 0 0 60px 20px rgba(204, 0, 0, 0.5);
+        }
+        .blood-trail {
+            position: fixed;
+            z-index: 99998;
+            pointer-events: none;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--blood-red);
+            opacity: 0.7;
+            transform: translate(-50%, -50%);
+            will-change: left, top, opacity;
+            animation: trailDrip 0.8s ease-out forwards;
+        }
+        @keyframes trailDrip {
+            0% {
+                opacity: 0.8;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, 40px) scale(0.3);
+            }
+        }
+
+        /* ========================================================= */
+        /* SEÇÃO 1 - HERO COM TEXTO GIGANTE "VOCÊ IGNOROU"          */
+        /* ========================================================= */
+        #hero-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: var(--black-absolute);
+            overflow: hidden;
+        }
+
+        #hero-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #hero-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(102, 0, 0, 0.5) 80%, rgba(51, 0, 0, 0.8) 100%);
+            pointer-events: none;
+            z-index: 1;
+            animation: vignettePulse 3s ease-in-out infinite;
+        }
+        @keyframes vignettePulse {
+            0%,
+            100% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 0.9;
+            }
+        }
+
+        #hero-title {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: clamp(3.5rem, 9vw, 8rem);
+            color: var(--blood-red);
+            letter-spacing: -0.02em;
+            text-align: center;
+            line-height: 0.95;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 80px rgba(204, 0, 0, 0.6), 0 0 160px rgba(204, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.8);
+            animation: titleBleed 3s ease-in-out infinite;
+            user-select: none;
+        }
+        @keyframes titleBleed {
+            0%,
+            100% {
+                text-shadow: 0 0 80px rgba(204, 0, 0, 0.6), 0 0 160px rgba(204, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.8);
+            }
+            50% {
+                text-shadow: 0 0 120px rgba(204, 0, 0, 0.9), 0 0 200px rgba(204, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.9);
+            }
+        }
+        #hero-title .char {
+            display: inline-block;
+            will-change: transform, opacity;
+            animation: charFloat 4s ease-in-out infinite;
+        }
+        @keyframes charFloat {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            25% {
+                transform: translateY(-3px);
+            }
+            75% {
+                transform: translateY(2px);
+            }
+        }
+
+        #hero-subtitle {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--white-aged);
+            opacity: 0.6;
+            letter-spacing: 0.25em;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 2;
+            text-transform: uppercase;
+            animation: subtitleFade 2.5s ease-in-out infinite;
+        }
+        @keyframes subtitleFade {
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        #scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.6;
+            animation: bounceDown 2s ease-in-out infinite;
+            cursor: pointer;
+        }
+        @keyframes bounceDown {
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(15px);
+            }
+        }
+        #scroll-indicator svg {
+            width: 28px;
+            height: 28px;
+            stroke: var(--blood-red);
+            fill: none;
+            stroke-width: 2;
+            filter: drop-shadow(0 0 10px rgba(204, 0, 0, 0.6));
+        }
+        #scroll-indicator span {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            color: var(--white-aged);
+            opacity: 0.5;
+        }
+
+        /* ========================================================= */
+        /* SEÇÃO 2 - FRASE DE IMPACTO "SOFRA AS CONSEQUÊNCIAS"       */
+        /* ========================================================= */
+        #consequence-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--black-absolute);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #blood-drip-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.08;
+        }
+        .blood-drip {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--blood-red), transparent);
+            animation: dripFall 3s ease-in infinite;
+            opacity: 0;
+        }
+        @keyframes dripFall {
+            0% {
+                top: -10%;
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.7;
+            }
+            80% {
+                opacity: 0.4;
+            }
+            100% {
+                top: 110%;
+                opacity: 0;
+            }
+        }
+
+        #consequence-text {
+            font-family: var(--font-primary);
+            font-weight: 500;
+            font-size: clamp(2rem, 4.5vw, 4rem);
+            color: var(--white-aged);
+            letter-spacing: 0.04em;
+            text-align: center;
+            max-width: 900px;
+            padding: 2rem;
+            opacity: 0;
+            transform: translateY(50px);
+            position: relative;
+            z-index: 2;
+            line-height: 1.3;
+            transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+        }
+        #consequence-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #consequence-text .highlight {
+            color: var(--blood-red);
+            font-weight: 700;
+            text-shadow: 0 0 40px rgba(204, 0, 0, 0.6);
+            animation: highlightPulse 1.5s ease-in-out infinite;
+            display: inline-block;
+        }
+        @keyframes highlightPulse {
+            0%,
+            100% {
+                text-shadow: 0 0 40px rgba(204, 0, 0, 0.6);
+            }
+            50% {
+                text-shadow: 0 0 80px rgba(204, 0, 0, 1), 0 0 120px rgba(204, 0, 0, 0.7);
+            }
+        }
+
+        /* ========================================================= */
+        /* EFEITO DE PISCA - Tela inteira pisca vermelha             */
+        /* ========================================================= */
+        #flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--blood-red);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s ease-out;
+        }
+        #flash-overlay.active {
+            opacity: 0.85;
+        }
+
+        /* ========================================================= */
+        /* SEÇÃO 3 - TIMELINE INTERCALADA (ESQUERDA/DIREITA)         */
+        /* ========================================================= */
+        #timeline-section {
+            min-height: 100vh;
+            padding: 8rem 2rem 4rem;
+            background: var(--black-absolute);
+            position: relative;
+            display: none;
+            overflow: hidden;
+        }
+        #timeline-section.revealed {
+            display: block;
+            animation: fadeInSection 1s ease-out;
+        }
+        @keyframes fadeInSection {
+            from {
+                opacity: 0;
+                filter: blur(12px);
+            }
+            to {
+                opacity: 1;
+                filter: blur(0);
+            }
+        }
+
+        #timeline-static-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.03;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(204, 0, 0, 0.3) 2px,
+                    rgba(204, 0, 0, 0.3) 4px);
+            animation: staticShift 0.5s steps(10) infinite;
+        }
+        @keyframes staticShift {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(10px);
+            }
+        }
+
+        #timeline-title {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--blood-red);
+            letter-spacing: 0.3em;
+            text-align: center;
+            margin-bottom: 5rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 25px rgba(204, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+            animation: titleGlitch 4s infinite;
+        }
+        @keyframes titleGlitch {
+            0%,
+            90%,
+            100% {
+                transform: translate(0);
+                opacity: 1;
+            }
+            92% {
+                transform: translate(-6px, 3px);
+                opacity: 0.6;
+            }
+            94% {
+                transform: translate(5px, -2px);
+                opacity: 0.8;
+            }
+            96% {
+                transform: translate(-3px, -4px);
+                opacity: 0.4;
+            }
+        }
+
+        /* Container da timeline intercalada */
+        .timeline-intercalada {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Linha central vermelha pulsante */
+        .timeline-intercalada::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom,
+                    transparent,
+                    var(--blood-red) 5%,
+                    var(--blood-dark) 30%,
+                    var(--blood-red) 60%,
+                    var(--blood-dried) 85%,
+                    transparent);
+            opacity: 0.5;
+            animation: linePulse 3s ease-in-out infinite;
+            box-shadow: 0 0 15px rgba(204, 0, 0, 0.4);
+            transform: translateX(-50%);
+        }
+        @keyframes linePulse {
+            0%,
+            100% {
+                opacity: 0.4;
+                box-shadow: 0 0 15px rgba(204, 0, 0, 0.4);
+            }
+            50% {
+                opacity: 0.7;
+                box-shadow: 0 0 30px rgba(204, 0, 0, 0.8);
+            }
+        }
+
+        /* Item da timeline */
+        .timeline-item {
+            position: relative;
+            width: 50%;
+            padding: 0 2.5rem;
+            margin-bottom: 5rem;
+            opacity: 0;
+            will-change: transform, opacity;
+            box-sizing: border-box;
+        }
+        /* Itens ímpares: esquerda */
+        .timeline-item:nth-child(odd) {
+            left: 0;
+            text-align: right;
+            transform: translateX(-60px);
+        }
+        /* Itens pares: direita */
+        .timeline-item:nth-child(even) {
+            left: 50%;
+            text-align: left;
+            transform: translateX(60px);
+        }
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateX(0) !important;
+            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Marcador de gota de sangue na linha central */
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 0.5rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            background: var(--blood-red);
+            box-shadow: 0 0 20px rgba(204, 0, 0, 0.8), 0 0 40px rgba(204, 0, 0, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+            transform: rotate(45deg);
+            animation: dropPulse 2s ease-in-out infinite;
+        }
+        /* Ímpares: marcador na direita do item (linha central) */
+        .timeline-item:nth-child(odd)::before {
+            right: -2.7rem;
+        }
+        /* Pares: marcador na esquerda do item (linha central) */
+        .timeline-item:nth-child(even)::before {
+            left: -2.7rem;
+        }
+        @keyframes dropPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(204, 0, 0, 0.8), 0 0 40px rgba(204, 0, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(204, 0, 0, 1), 0 0 60px rgba(204, 0, 0, 0.7);
+            }
+        }
+
+        .timeline-year {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 2.8rem;
+            color: var(--blood-red);
+            letter-spacing: 0.03em;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(204, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.7);
+            display: inline-block;
+            position: relative;
+        }
+        .timeline-year::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--blood-red), var(--blood-dark), transparent);
+            opacity: 0.6;
+            animation: yearUnderline 2s ease-in-out infinite;
+        }
+        @keyframes yearUnderline {
+            0%,
+            100% {
+                transform: scaleX(1);
+                opacity: 0.6;
+            }
+            50% {
+                transform: scaleX(1.2);
+                opacity: 0.9;
+            }
+        }
+
+        .timeline-description {
+            font-family: var(--font-primary);
+            font-weight: 300;
+            font-size: 1rem;
+            color: var(--white-aged);
+            opacity: 0.85;
+            line-height: 1.7;
+            letter-spacing: 0.02em;
+            margin-top: 0.4rem;
+        }
+        .timeline-description strong {
+            color: var(--blood-red);
+            font-weight: 600;
+        }
+
+        .timeline-tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            letter-spacing: 0.25em;
+            color: var(--gray-ghost);
+            background: rgba(204, 0, 0, 0.08);
+            padding: 0.3rem 0.8rem;
+            border-radius: 2px;
+            margin-bottom: 0.6rem;
+            border: 1px solid rgba(204, 0, 0, 0.3);
+            text-transform: uppercase;
+            animation: tagFlicker 5s infinite;
+        }
+        @keyframes tagFlicker {
+            0%,
+            95%,
+            100% {
+                border-color: rgba(204, 0, 0, 0.3);
+            }
+            96% {
+                border-color: rgba(204, 0, 0, 0.9);
+            }
+            97% {
+                border-color: rgba(204, 0, 0, 0.1);
+            }
+        }
+
+        /* ========================================================= */
+        /* SEÇÃO FINAL - FRASE PULSANTE                              */
+        /* ========================================================= */
+        #final-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--black-absolute);
+            position: relative;
+            overflow: hidden;
+            display: none;
+        }
+        #final-section.revealed {
+            display: flex;
+            animation: fadeInSection 1s ease-out;
+        }
+
+        #final-bg-stain {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(ellipse at center, rgba(204, 0, 0, 0.2) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: finalStainPulse 3s ease-in-out infinite;
+            border-radius: 50%;
+        }
+        @keyframes finalStainPulse {
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.15);
+            }
+        }
+
+        #final-text {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: clamp(2rem, 5vw, 4.5rem);
+            color: var(--blood-red);
+            text-align: center;
+            letter-spacing: 0.03em;
+            line-height: 1.2;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 50px rgba(204, 0, 0, 0.7), 0 0 100px rgba(204, 0, 0, 0.4), 0 0 150px rgba(204, 0, 0, 0.2);
+            animation: finalTextPulse 2s ease-in-out infinite;
+            max-width: 800px;
+            padding: 2rem;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+        }
+        #final-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @keyframes finalTextPulse {
+            0%,
+            100% {
+                text-shadow: 0 0 50px rgba(204, 0, 0, 0.7), 0 0 100px rgba(204, 0, 0, 0.4), 0 0 150px rgba(204, 0, 0, 0.2);
+            }
+            50% {
+                text-shadow: 0 0 80px rgba(204, 0, 0, 1), 0 0 140px rgba(204, 0, 0, 0.7), 0 0 200px rgba(204, 0, 0, 0.5);
+            }
+        }
+
+        /* Ondulações de sangue no fundo da seção final */
+        .final-wave {
+            position: absolute;
+            width: 120%;
+            height: 100px;
+            opacity: 0.04;
+            pointer-events: none;
+            animation: waveDrift 7s ease-in-out infinite;
+        }
+        @keyframes waveDrift {
+            0%,
+            100% {
+                transform: translateY(0) translateX(-5%);
+            }
+            50% {
+                transform: translateY(-20px) translateX(5%);
+            }
+        }
+
+        /* ========================================================= */
+        /* RESPONSIVIDADE                                            */
+        /* ========================================================= */
+        @media (max-width: 768px) {
+            #blood-cursor,
+            .blood-trail {
+                display: none;
+            }
+            html,
+            body {
+                cursor: auto;
+            }
+            #hero-title {
+                font-size: 2.8rem;
+                letter-spacing: 0;
+            }
+            #consequence-text {
+                font-size: 1.5rem;
+                padding: 1.5rem;
+            }
+            /* Timeline intercalada vira coluna única no mobile */
+            .timeline-intercalada::before {
+                left: 1rem;
+            }
+            .timeline-item {
+                width: 100%;
+                left: 0 !important;
+                text-align: left !important;
+                padding: 0 0 0 2.8rem;
+                margin-bottom: 3rem;
+                transform: translateX(-40px) !important;
+            }
+            .timeline-item:nth-child(odd)::before,
+            .timeline-item:nth-child(even)::before {
+                left: -0.1rem !important;
+                right: auto !important;
+            }
+            .timeline-year {
+                font-size: 2rem;
+            }
+            .timeline-description {
+                font-size: 0.9rem;
+            }
+            #timeline-section {
+                padding: 4rem 1rem 2rem;
+            }
+            #final-text {
+                font-size: 1.5rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- CURSOR DE SANGUE CUSTOMIZADO                                 -->
+    <!-- ============================================================ -->
+    <div id="blood-cursor" aria-hidden="true"></div>
+
+    <!-- ============================================================ -->
+    <!-- SEÇÃO 1 - HERO: "VOCÊ IGNOROU" em vermelho sangue           -->
+    <!-- ============================================================ -->
+    <section id="hero-section" aria-label="Hero - Você Ignorou">
+        <canvas id="hero-particles" aria-hidden="true"></canvas>
+        <h1 id="hero-title">VOCÊ    IGNOROU</h1>
+        <p id="hero-subtitle">[ SISTEMA DE ALERTA DESATIVADO ]</p>
+        <div id="scroll-indicator" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            <span>DESCERR</span>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SEÇÃO 2 - "SOFRA AS CONSEQUÊNCIAS"                           -->
+    <!-- ============================================================ -->
+    <section id="consequence-section" aria-label="Consequências">
+        <div id="blood-drip-bg" aria-hidden="true"></div>
+        <p id="consequence-text">
+            Agora, <span class="highlight">sofra as consequências</span> da sua escolha.
+        </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- OVERLAY DE PISCA VERMELHA                                    -->
+    <!-- ============================================================ -->
+    <div id="flash-overlay" aria-hidden="true"></div>
+
+    <!-- ============================================================ -->
+    <!-- SEÇÃO 3 - TIMELINE INTERCALADA (ESQUERDA/DIREITA)            -->
+    <!-- ============================================================ -->
+    <section id="timeline-section" aria-label="Linha do Tempo Intercalada">
+        <div id="timeline-static-bg" aria-hidden="true"></div>
+        <h2 id="timeline-title">▌REGISTRO DE SANGRAMENTO TEMPORAL</h2>
+
+        <div class="timeline-intercalada">
+            <!-- Item 1 - Esquerda -->
+            <div class="timeline-item" data-year="2026">
+                <span class="timeline-tag">[ PROTOCOLO_001 ]</span>
+                <div class="timeline-year">2026</div>
+                <p class="timeline-description">
+                    Relatórios científicos são <strong>enterrados vivos</strong>. Aquíferos secam em silêncio enquanto a água ainda corre para as elites.
+                </p>
+            </div>
+            <!-- Item 2 - Direita -->
+            <div class="timeline-item" data-year="2028">
+                <span class="timeline-tag">[ PROTOCOLO_002 ]</span>
+                <div class="timeline-year">2028</div>
+                <p class="timeline-description">
+                    O <strong>Acordo de Gestão Hídrica Global</strong> fracassa. Rios transfronteiriços viram zonas de conflito armado.
+                </p>
+            </div>
+            <!-- Item 3 - Esquerda -->
+            <div class="timeline-item" data-year="2031">
+                <span class="timeline-tag">[ PROTOCOLO_003 ]</span>
+                <div class="timeline-year">2031</div>
+                <p class="timeline-description">
+                    <strong>Racionamento permanente</strong> em 12 megacidades. O litro de água supera o barril de petróleo.
+                </p>
+            </div>
+            <!-- Item 4 - Direita -->
+            <div class="timeline-item" data-year="2034">
+                <span class="timeline-tag">[ PROTOCOLO_004 ]</span>
+                <div class="timeline-year">2034</div>
+                <p class="timeline-description">
+                    O <strong>Aquífero Guarani é exaurido</strong>. Milhões de refugiados climáticos cruzam fronteiras secas.
+                </p>
+            </div>
+            <!-- Item 5 - Esquerda -->
+            <div class="timeline-item" data-year="2037">
+                <span class="timeline-tag">[ PROTOCOLO_005 ]</span>
+                <div class="timeline-year">2037</div>
+                <p class="timeline-description">
+                    <strong>Algoritmos de previsão falham</strong>. Secas de 20 meses assolam regiões antes tropicais.
+                </p>
+            </div>
+            <!-- Item 6 - Direita -->
+            <div class="timeline-item" data-year="2040">
+                <span class="timeline-tag">[ PROTOCOLO_006 ]</span>
+                <div class="timeline-year">2040</div>
+                <p class="timeline-description">
+                    A <strong>"água virtual"</strong> vira a única moeda real. Alimentos ricos em água tornam-se inacessíveis.
+                </p>
+            </div>
+            <!-- Item 7 - Esquerda -->
+            <div class="timeline-item" data-year="2043">
+                <span class="timeline-tag">[ PROTOCOLO_007 ]</span>
+                <div class="timeline-year">2043</div>
+                <p class="timeline-description">
+                    O <strong>último grande rio</strong> seca. Barragens são protegidas por exércitos que cobram em sangue.
+                </p>
+            </div>
+            <!-- Item 8 - Direita -->
+            <div class="timeline-item" data-year="2047">
+                <span class="timeline-tag">[ PROTOCOLO_008 ]</span>
+                <div class="timeline-year">2047</div>
+                <p class="timeline-description">
+                    <strong>Reservas subterrâneas profundas</strong> atingem níveis críticos. O solo colapsa. A Terra sangra poeira.
+                </p>
+            </div>
+            <!-- Item 9 - Esquerda -->
+            <div class="timeline-item" data-year="2050">
+                <span class="timeline-tag">[ PROTOCOLO_FINAL ]</span>
+                <div class="timeline-year">2050</div>
+                <p class="timeline-description">
+                    <strong>Silêncio absoluto.</strong> A espécie que ignorou os avisos agora é só fragmento corrompido. A humanidade sempre foi o recurso em extinção.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SEÇÃO FINAL - FRASE PULSANTE                                 -->
+    <!-- ============================================================ -->
+    <section id="final-section" aria-label="Mensagem Final">
+        <!-- Mancha de sangue pulsante no fundo -->
+        <div id="final-bg-stain" aria-hidden="true"></div>
+        <!-- Ondulações fantasma -->
+        <svg class="final-wave" viewBox="0 0 1200 100" preserveAspectRatio="none" aria-hidden="true" style="top:25%;">
+            <path d="M0 50 Q200 20 400 50 Q600 80 800 50 Q1000 20 1200 50 L1200 100 L0 100 Z" fill="rgba(204,0,0,0.1)"/>
+        </svg>
+        <svg class="final-wave" viewBox="0 0 1200 100" preserveAspectRatio="none" aria-hidden="true" style="top:65%; animation-delay: -3.5s;">
+            <path d="M0 40 Q250 70 500 40 Q750 10 1000 40 Q1100 60 1200 40 L1200 100 L0 100 Z" fill="rgba(102,0,0,0.08)"/>
+        </svg>
+
+        <p id="final-text">às vezes nem só o vermelho sangra</p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS -->
+    <!-- ============================================================ -->
+    <script>
+        (function() {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // ========================================================
+            // REFERÊNCIAS DOM
+            // ========================================================
+            const heroSection = document.getElementById('hero-section');
+            const heroCanvas = document.getElementById('hero-particles');
+            const ctx = heroCanvas.getContext('2d');
+            const consequenceText = document.getElementById('consequence-text');
+            const consequenceSection = document.getElementById('consequence-section');
+            const flashOverlay = document.getElementById('flash-overlay');
+            const timelineSection = document.getElementById('timeline-section');
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            const finalSection = document.getElementById('final-section');
+            const finalText = document.getElementById('final-text');
+            const bloodCursor = document.getElementById('blood-cursor');
+            const bloodDripBg = document.getElementById('blood-drip-bg');
+            const heroTitle = document.getElementById('hero-title');
+
+            // ========================================================
+            // DETECÇÃO DE MOBILE
+            // ========================================================
+            const isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+            // ========================================================
+            // CURSOR DE SANGUE
+            // ========================================================
+            let mouseX = window.innerWidth / 2;
+            let mouseY = window.innerHeight / 2;
+            let cursorX = mouseX;
+            let cursorY = mouseY;
+            const trailElements = [];
+            const MAX_TRAILS = 6;
+
+            if (!isMobile) {
+                document.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                    const trail = document.createElement('div');
+                    trail.className = 'blood-trail';
+                    trail.style.left = e.clientX + 'px';
+                    trail.style.top = e.clientY + 'px';
+                    document.body.appendChild(trail);
+                    trailElements.push(trail);
+                    if (trailElements.length > MAX_TRAILS) {
+                        const old = trailElements.shift();
+                        if (old && old.parentNode) old.parentNode.removeChild(old);
+                    }
+                    setTimeout(() => {
+                        const idx = trailElements.indexOf(trail);
+                        if (idx > -1) trailElements.splice(idx, 1);
+                        if (trail.parentNode) trail.parentNode.removeChild(trail);
+                    }, 850);
+                });
+                document.addEventListener('mouseover', (e) => {
+                    if (e.target.closest('#scroll-indicator, .timeline-item, button, a')) {
+                        bloodCursor.classList.add('hovering');
+                    }
+                });
+                document.addEventListener('mouseout', (e) => {
+                    if (e.target.closest('#scroll-indicator, .timeline-item, button, a')) {
+                        bloodCursor.classList.remove('hovering');
+                    }
+                });
+            } else {
+                bloodCursor.style.display = 'none';
+            }
+
+            function updateCursor() {
+                if (!isMobile) {
+                    cursorX += (mouseX - cursorX) * 0.22;
+                    cursorY += (mouseY - cursorY) * 0.22;
+                    bloodCursor.style.left = cursorX + 'px';
+                    bloodCursor.style.top = cursorY + 'px';
+                }
+                requestAnimationFrame(updateCursor);
+            }
+            updateCursor();
+
+            // ========================================================
+            // CANVAS DE PARTÍCULAS
+            // ========================================================
+            function resizeHeroCanvas() {
+                heroCanvas.width = heroSection.offsetWidth;
+                heroCanvas.height = heroSection.offsetHeight;
+            }
+            resizeHeroCanvas();
+            window.addEventListener('resize', () => { resizeHeroCanvas();
+                initHeroParticles(); });
+
+            let heroParticles = [];
+            const MAX_HERO_PARTICLES = 70;
+
+            function initHeroParticles() {
+                heroParticles = [];
+                for (let i = 0; i < MAX_HERO_PARTICLES; i++) {
+                    heroParticles.push({
+                        x: Math.random() * heroCanvas.width,
+                        y: Math.random() * heroCanvas.height,
+                        radius: Math.random() * 2 + 0.4,
+                        speedX: (Math.random() - 0.5) * 0.35,
+                        speedY: -(Math.random() * 0.5 + 0.15),
+                        opacity: Math.random() * 0.7 + 0.15,
+                        life: Math.random() * 250 + 100,
+                        maxLife: 350,
+                        hue: Math.random() < 0.3 ? '204,0,0' : '102,0,0',
+                    });
+                }
+            }
+            initHeroParticles();
+
+            function animateHeroParticles() {
+                ctx.clearRect(0, 0, heroCanvas.width, heroCanvas.height);
+                for (let p of heroParticles) {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    p.life--;
+                    const lifeRatio = p.life / p.maxLife;
+                    const currentOpacity = p.opacity * lifeRatio;
+                    ctx.beginPath();
+                    if (Math.random() < 0.4) ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    else ctx.ellipse(p.x, p.y, p.radius * 0.7, p.radius * 1.3, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${p.hue},${currentOpacity})`;
+                    ctx.fill();
+                    if (currentOpacity > 0.4) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius * 0.5, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255,255,255,${currentOpacity * 0.3})`;
+                        ctx.fill();
+                    }
+                    if (p.life <= 0 || p.y < -30 || p.y > heroCanvas.height + 30 || p.x < -30 || p.x > heroCanvas
+                        .width + 30) {
+                        p.x = Math.random() * heroCanvas.width;
+                        p.y = heroCanvas.height + 40;
+                        p.life = p.maxLife;
+                        p.speedY = -(Math.random() * 0.6 + 0.2);
+                    }
+                }
+                requestAnimationFrame(animateHeroParticles);
+            }
+            animateHeroParticles();
+
+            // ========================================================
+            // GOTEJAMENTO DE SANGUE
+            // ========================================================
+            function createBloodDrips() {
+                for (let i = 0; i < 15; i++) {
+                    const drip = document.createElement('div');
+                    drip.className = 'blood-drip';
+                    drip.style.left = Math.random() * 100 + '%';
+                    drip.style.height = Math.random() * 120 + 60 + 'px';
+                    drip.style.animationDuration = Math.random() * 4 + 2 + 's';
+                    drip.style.animationDelay = Math.random() * 5 + 's';
+                    bloodDripBg.appendChild(drip);
+                }
+            }
+            createBloodDrips();
+
+            // ========================================================
+            // QUEBRAR TÍTULO EM CARACTERES
+            // ========================================================
+            function splitTitleToChars() {
+                const text = heroTitle.textContent;
+                heroTitle.textContent = '';
+                const chars = [];
+                for (let char of text) {
+                    const span = document.createElement('span');
+                    span.className = 'char';
+                    span.textContent = char;
+                    span.style.display = char === '\n' ? 'block' : 'inline-block';
+                    span.style.animationDelay = Math.random() * 2 + 's';
+                    if (char === '\n') { span.style.width = '100%';
+                        span.style.height = '0.5rem'; }
+                    heroTitle.appendChild(span);
+                    chars.push(span);
+                }
+                return chars;
+            }
+            const titleChars = splitTitleToChars();
+
+            // ========================================================
+            // OBSERVER FRASE CONSEQUÊNCIA
+            // ========================================================
+            const consequenceObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        consequenceText.classList.add('visible');
+                        gsap.fromTo(consequenceText.querySelector('.highlight'), { scale: 1.3,
+                            opacity: 0.3 }, { scale: 1, opacity: 1, duration: 1,
+                            ease: 'elastic.out(1, 0.5)', delay: 0.3 });
+                    }
+                });
+            }, { threshold: 0.4 });
+            consequenceObserver.observe(consequenceSection);
+
+            // ========================================================
+            // EFEITO DE PISCA + REVELAÇÃO DA TIMELINE E SEÇÃO FINAL
+            // ========================================================
+            let flashTriggered = false;
+            const flashObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.7 && !flashTriggered) {
+                        flashTriggered = true;
+                        setTimeout(() => {
+                            const flashSequence = [
+                                { duration: 180, gap: 120 },
+                                { duration: 250, gap: 100 },
+                                { duration: 150, gap: 80 },
+                                { duration: 350, gap: 150 },
+                                { duration: 200, gap: 0 },
+                            ];
+                            let totalDelay = 0;
+                            flashSequence.forEach((flash, index) => {
+                                totalDelay += flash.gap;
+                                setTimeout(() => {
+                                    flashOverlay.classList.add('active');
+                                    gsap.to('body', {
+                                        x: (Math.random() - 0.5) * 8,
+                                        y: (Math.random() - 0.5) * 6,
+                                        duration: 0.05,
+                                        yoyo: true,
+                                        repeat: 2,
+                                        ease: 'steps(2)',
+                                        onComplete: () => gsap.set('body', { x: 0,
+                                            y: 0 }),
+                                    });
+                                }, totalDelay);
+                                totalDelay += flash.duration;
+                                setTimeout(() => {
+                                    flashOverlay.classList.remove('active');
+                                    if (index === flashSequence.length - 1) {
+                                        timelineSection.classList.add('revealed');
+                                        finalSection.classList.add('revealed');
+                                        setTimeout(() => {
+                                            timelineSection.scrollIntoView({
+                                                behavior: 'smooth',
+                                                block: 'start' });
+                                            observeTimelineItems();
+                                            observeFinalSection();
+                                        }, 200);
+                                    }
+                                }, totalDelay);
+                            });
+                        }, 800);
+                    }
+                });
+            }, { threshold: 0.7 });
+            flashObserver.observe(consequenceSection);
+
+            // ========================================================
+            // OBSERVER ITENS DA TIMELINE INTERCALADA
+            // ========================================================
+            function observeTimelineItems() {
+                timelineItems.forEach((item, index) => {
+                    gsap.fromTo(item, { opacity: 0, x: index % 2 === 0 ? -60 : 60, filter: 'blur(6px)' }, {
+                        opacity: 1,
+                        x: 0,
+                        filter: 'blur(0px)',
+                        duration: 0.9,
+                        delay: index * 0.08,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: item,
+                            start: 'top 85%',
+                            toggleActions: 'play none none none',
+                        },
+                    });
+                    item.addEventListener('mouseenter', () => {
+                        gsap.to(item.querySelector('.timeline-year'), {
+                            textShadow: '0 0 50px rgba(204,0,0,1), 0 0 100px rgba(204,0,0,0.8)',
+                            duration: 0.4 });
+                    });
+                    item.addEventListener('mouseleave', () => {
+                        gsap.to(item.querySelector('.timeline-year'), {
+                            textShadow: '0 0 30px rgba(204,0,0,0.6), 0 0 60px rgba(204,0,0,0.3)',
+                            duration: 0.4 });
+                    });
+                });
+                ScrollTrigger.refresh();
+            }
+
+            // ========================================================
+            // OBSERVER SEÇÃO FINAL - FRASE PULSANTE
+            // ========================================================
+            function observeFinalSection() {
+                const finalObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            finalText.classList.add('visible');
+                            // Animação extra com GSAP
+                            gsap.fromTo(finalText, { scale: 1.2, opacity: 0.3 }, {
+                                scale: 1,
+                                opacity: 1,
+                                duration: 1.2,
+                                ease: 'elastic.out(1, 0.6)',
+                            });
+                        }
+                    });
+                }, { threshold: 0.5 });
+                finalObserver.observe(finalSection);
+            }
+
+            // ========================================================
+            // GLITCH NO TÍTULO
+            // ========================================================
+            setInterval(() => {
+                if (Math.random() < 0.25) {
+                    const randomChar = titleChars[Math.floor(Math.random() * titleChars.length)];
+                    if (randomChar && randomChar.textContent !== '\n' && randomChar.textContent !== ' ') {
+                        const originalChar = randomChar.textContent;
+                        randomChar.textContent = '!@#$%&*?' [Math.floor(Math.random() * 7)];
+                        randomChar.style.color = '#ffffff';
+                        randomChar.style.textShadow = '0 0 20px rgba(255,255,255,0.9)';
+                        setTimeout(() => {
+                            randomChar.textContent = originalChar;
+                            randomChar.style.color = '';
+                            randomChar.style.textShadow = '';
+                        }, 150 + Math.random() * 250);
+                    }
+                }
+            }, 2500);
+
+            // ========================================================
+            // SCROLL AO CLICAR NA SETA
+            // ========================================================
+            document.getElementById('scroll-indicator').addEventListener('click', () => {
+                consequenceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+
+            // ========================================================
+            // LOG
+            // ========================================================
+            console.log('%c SANGRAMENTO_TEMPORAL %c v3.0 ',
+                'background:#CC0000;color:#0A0A0A;padding:8px 16px;font-family:monospace;font-size:14px;letter-spacing:2px;',
+                'color:#660000;');
+            console.log('%c "às vezes nem só o vermelho sangra" ',
+                'color:#E8E6E3;font-style:italic;font-size:14px;');
+        })();
+    </script>
+</body>
+</html>
